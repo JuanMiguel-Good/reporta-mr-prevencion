@@ -1,13 +1,12 @@
 import { ReactNode, useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Camera, Grid3x3, Users, LogOut, BarChart3, X, Settings, Package, UserCog, Building2, HelpCircle, MessageCircle, MoreVertical, Brain, Megaphone, TrendingUp } from 'lucide-react';
+import { Camera, Grid3x3, Users, LogOut, BarChart3, X, Settings, Building2, HelpCircle, MessageCircle, MoreVertical, Brain, Megaphone, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { NetworkStatusBanner } from '../common/NetworkStatusBanner';
 import { UpdatePrompt } from '../common/UpdatePrompt';
 import { InstallPrompt } from '../common/InstallPrompt';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { PushNotificationPrompt } from '../notifications/PushNotificationPrompt';
-import { CompanySwitcher } from '../common/CompanySwitcher';
 import { syncService } from '../../utils/syncService';
 import { useNotificationProcessor } from '../../hooks/useNotificationProcessor';
 import { useOnboarding } from '../../hooks/useOnboarding';
@@ -24,7 +23,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { user, signOut, isImpersonating, impersonationData, stopImpersonation } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   useNotificationProcessor();
@@ -99,35 +98,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   const getNavItems = () => {
-    if (user.role === 'super_admin' && !isImpersonating) {
+    if (user.role === 'super_admin') {
       return [
         {
-          icon: Users,
+          icon: Building2,
           label: 'Empresas',
           path: '/companies',
           show: true,
           onboardingId: 'companies-button',
-        },
-        {
-          icon: Building2,
-          label: 'Gestores Multiempresa',
-          path: '/multi-company-managers',
-          show: true,
-          onboardingId: 'multi-company-managers-button',
-        },
-        {
-          icon: UserCog,
-          label: 'Usuarios',
-          path: '/users',
-          show: true,
-          onboardingId: 'users-button',
-        },
-        {
-          icon: Package,
-          label: 'Planes',
-          path: '/plans',
-          show: true,
-          onboardingId: 'plans-button',
         },
         {
           icon: Megaphone,
@@ -207,20 +185,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const navItems = getNavItems();
 
-  const getRoleLabel = (role: string): string => {
-    const labels: Record<string, string> = {
-      worker: 'Trabajador',
-      sst_manager: 'Gestor SST',
-      responsible: 'Responsable',
-    };
-    return labels[role] || role;
-  };
-
-  const handleStopImpersonation = () => {
-    stopImpersonation();
-    navigate('/companies');
-  };
-
   const handleHelpClick = () => {
     const userName = user.full_name || 'Usuario';
     const companyName = user.company?.name || 'Sin empresa';
@@ -274,7 +238,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <CompanySwitcher />
             {user.role !== 'super_admin' && (
               <NotificationBell />
             )}
@@ -352,41 +315,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
       </header>
-
-      {isImpersonating && impersonationData && (
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 border-b border-orange-600 sticky top-[73px] z-10 shadow-md">
-          <div className="max-w-7xl mx-auto px-4 py-2 sm:py-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-white flex-shrink-0">
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                    <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Modo Impersonación</span>
-                  </div>
-                  <div className="h-4 w-px bg-white/30 flex-shrink-0"></div>
-                  <div className="text-white text-xs sm:text-sm min-w-0 flex-1">
-                    <div className="truncate">
-                      <span className="font-medium">{impersonationData.userName}</span>
-                      <span className="mx-1 sm:mx-2">•</span>
-                      <span className="opacity-90">{getRoleLabel(impersonationData.role)}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-white text-xs opacity-90 truncate pl-6 sm:pl-7">
-                  {impersonationData.companyName}
-                </div>
-              </div>
-              <button
-                onClick={handleStopImpersonation}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white text-orange-600 rounded-lg hover:bg-orange-50 transition-colors text-xs sm:text-sm font-medium shadow-sm flex-shrink-0"
-              >
-                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Salir</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <main className="max-w-7xl mx-auto">
         {children}

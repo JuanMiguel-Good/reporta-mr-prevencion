@@ -11,8 +11,6 @@ import { GalleryPage } from './pages/GalleryPage';
 import { UsersPage } from './pages/UsersPage';
 import { CompaniesPage } from './pages/CompaniesPage';
 import { ConfigurationPage } from './pages/ConfigurationPage';
-import { PlansPage } from './pages/PlansPage';
-import { MultiCompanyManagersPage } from './pages/MultiCompanyManagersPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { HelpPage } from './pages/HelpPage';
 import MetricsPage from './pages/MetricsPage';
@@ -24,7 +22,7 @@ import { AndroidBadgeWarning } from './components/common/AndroidBadgeWarning';
 import { RegistrationWelcome } from './components/common/RegistrationWelcome';
 
 function AppRoutes() {
-  const { user, loading, isImpersonating } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <Loading fullScreen />;
@@ -43,18 +41,13 @@ function AppRoutes() {
   }
 
   const getDefaultRoute = () => {
-    if (user.role === 'super_admin' && !isImpersonating) {
-      return '/companies';
-    }
-    if (user.role === 'worker') {
-      return '/camera';
-    }
+    if (user.role === 'super_admin') return '/companies';
+    if (user.role === 'worker') return '/camera';
     return '/gallery';
   };
 
   const defaultRoute = getDefaultRoute();
-
-  const canAccessOperational = user.role !== 'super_admin' || isImpersonating;
+  const canAccessOperational = user.role !== 'super_admin';
 
   return (
     <>
@@ -64,129 +57,107 @@ function AppRoutes() {
       <RegistrationWelcome />
       <Routes>
         {canAccessOperational && (
-        <Route
-          path="/camera"
-          element={
-            <ProtectedRoute>
-              <CameraPage />
-            </ProtectedRoute>
-          }
-        />
-      )}
+          <Route
+            path="/camera"
+            element={
+              <ProtectedRoute>
+                <CameraPage />
+              </ProtectedRoute>
+            }
+          />
+        )}
 
-      {canAccessOperational && (
+        {canAccessOperational && (
+          <Route
+            path="/gallery"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <GalleryPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+        )}
+
+        <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+
         <Route
-          path="/gallery"
+          path="/users"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['sst_manager', 'super_admin']}>
               <AppLayout>
-                <GalleryPage />
+                <UsersPage />
               </AppLayout>
             </ProtectedRoute>
           }
         />
-      )}
 
-      <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+        <Route
+          path="/configuration"
+          element={
+            <ProtectedRoute allowedRoles={['sst_manager', 'hr_observer', 'super_admin']}>
+              <AppLayout>
+                <ConfigurationPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/users"
-        element={
-          <ProtectedRoute allowedRoles={['sst_manager', 'super_admin']}>
-            <AppLayout>
-              <UsersPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/metrics"
+          element={
+            <ProtectedRoute allowedRoles={['sst_manager', 'hr_observer']}>
+              <AppLayout>
+                <MetricsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/configuration"
-        element={
-          <ProtectedRoute allowedRoles={['sst_manager', 'hr_observer', 'super_admin']}>
-            <AppLayout>
-              <ConfigurationPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute allowedRoles={['super_admin', 'sst_manager', 'hr_observer']}>
+              <AppLayout>
+                <AnalyticsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/metrics"
-        element={
-          <ProtectedRoute allowedRoles={['sst_manager', 'hr_observer']}>
-            <AppLayout>
-              <MetricsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/companies"
+          element={
+            <ProtectedRoute allowedRoles={['super_admin']}>
+              <AppLayout>
+                <CompaniesPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute allowedRoles={['super_admin', 'sst_manager', 'hr_observer']}>
-            <AppLayout>
-              <AnalyticsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/announcements"
+          element={
+            <ProtectedRoute allowedRoles={['super_admin']}>
+              <AppLayout>
+                <AnnouncementsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/plans"
-        element={
-          <ProtectedRoute allowedRoles={['super_admin']}>
-            <AppLayout>
-              <PlansPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/companies"
-        element={
-          <ProtectedRoute allowedRoles={['super_admin']}>
-            <AppLayout>
-              <CompaniesPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/multi-company-managers"
-        element={
-          <ProtectedRoute allowedRoles={['super_admin']}>
-            <AppLayout>
-              <MultiCompanyManagersPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/announcements"
-        element={
-          <ProtectedRoute allowedRoles={['super_admin']}>
-            <AppLayout>
-              <AnnouncementsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/help"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <HelpPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/help"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <HelpPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<Navigate to={defaultRoute} replace />} />
       </Routes>

@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Button } from '../components/common/Button';
 
 export function ForgotPasswordPage() {
-  const [emailOrDni, setEmailOrDni] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -16,31 +16,11 @@ export function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      let email = emailOrDni;
-
-      if (!emailOrDni.includes('@')) {
-        const { data, error: dniError } = await supabase.rpc('get_email_from_dni', {
-          user_dni: emailOrDni
-        });
-
-        if (dniError || !data) {
-          throw new Error('No se encontró un usuario con ese DNI. Verifica que el DNI sea correcto.');
-        }
-
-        if (data.endsWith('@internal.temp')) {
-          throw new Error('Este usuario no tiene un email registrado. Por favor contacta al administrador para resetear tu contraseña.');
-        }
-
-        email = data;
-      }
-
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (resetError) {
-        throw resetError;
-      }
+      if (resetError) throw resetError;
 
       setSuccess(true);
     } catch (err: any) {
@@ -94,26 +74,26 @@ export function ForgotPasswordPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Recuperar Contraseña</h1>
             <p className="text-gray-600 mt-2">
-              Ingresa tu email o DNI para recibir un enlace de recuperación
+              Ingresa tu email para recibir un enlace de recuperación
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="emailOrDni" className="block text-sm font-medium text-gray-700 mb-2">
-                Email o DNI
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="emailOrDni"
-                  type="text"
-                  value={emailOrDni}
-                  onChange={(e) => setEmailOrDni(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  placeholder="Ingresa tu email o DNI"
+                  placeholder="Ingresa tu email"
                   required
                 />
               </div>
@@ -125,13 +105,7 @@ export function ForgotPasswordPage() {
               </div>
             )}
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full"
-              loading={loading}
-            >
+            <Button type="submit" variant="primary" size="lg" className="w-full" loading={loading}>
               Enviar Enlace de Recuperación
             </Button>
           </form>
@@ -148,7 +122,7 @@ export function ForgotPasswordPage() {
 
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-600 text-center">
-              <strong>Nota:</strong> Si olvidaste tu contraseña y no tienes acceso a tu email,
+              <strong>Nota:</strong> Si no tienes acceso a tu email,
               contacta a tu administrador o al soporte de Reporta para que te ayuden a recuperar el acceso.
             </p>
           </div>
