@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monochrome version for Safari pinned tabs -->
+  <rect x="140" y="100" width="232" height="312" rx="20" fill="black"/>
+  <rect x="196" y="80" width="120" height="50" rx="10" fill="black"/>
+  <rect x="206" y="90" width="100" height="30" rx="5" fill="white"/>
+  <path d="M 256 210 L 256 280" stroke="black" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="256" cy="310" r="10" fill="black"/>
+</svg>
