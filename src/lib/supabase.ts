@@ -47,7 +47,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     storage: typeof window !== 'undefined' ? cookieStorage : undefined,
     storageKey: 'mr-prevencion-auth',
-    flowType: 'pkce',
+    flowType: 'implicit',
   },
 });
 
