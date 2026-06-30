@@ -1,5 +1,5 @@
 const DB_NAME = 'reporta-offline';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const REPORTS_STORE = 'pending_reports';
 const PHOTOS_STORE = 'pending_photos';
 const CATEGORIES_STORE = 'categories_cache';
@@ -34,21 +34,21 @@ export interface CachedCategory {
   id: string;
   name: string;
   icon: string;
-  company_id: string;
+  user_id: string;
   timestamp: number;
 }
 
 export interface CachedArea {
   id: string;
   name: string;
-  company_id: string;
+  user_id: string;
   timestamp: number;
 }
 
 export interface CachedProyecto {
   id: string;
   name: string;
-  company_id: string;
+  user_id: string;
   timestamp: number;
 }
 
@@ -108,17 +108,17 @@ class OfflineStorageDB {
 
           if (!db.objectStoreNames.contains(CATEGORIES_STORE)) {
             const categoriesStore = db.createObjectStore(CATEGORIES_STORE, { keyPath: 'id' });
-            categoriesStore.createIndex('company_id', 'company_id', { unique: false });
+            categoriesStore.createIndex('user_id', 'user_id', { unique: false });
           }
 
           if (!db.objectStoreNames.contains(AREAS_STORE)) {
             const areasStore = db.createObjectStore(AREAS_STORE, { keyPath: 'id' });
-            areasStore.createIndex('company_id', 'company_id', { unique: false });
+            areasStore.createIndex('user_id', 'user_id', { unique: false });
           }
 
           if (!db.objectStoreNames.contains(PROYECTOS_STORE)) {
             const proyectosStore = db.createObjectStore(PROYECTOS_STORE, { keyPath: 'id' });
-            proyectosStore.createIndex('company_id', 'company_id', { unique: false });
+            proyectosStore.createIndex('user_id', 'user_id', { unique: false });
           }
 
           if (!db.objectStoreNames.contains(USERS_STORE)) {
@@ -326,7 +326,7 @@ class OfflineStorageDB {
     }
   }
 
-  async cacheCategories(categories: any[], companyId: string): Promise<void> {
+  async cacheCategories(categories: any[], userId: string): Promise<void> {
     const db = await this.ensureDB();
     const transaction = db.transaction([CATEGORIES_STORE], 'readwrite');
     const store = transaction.objectStore(CATEGORIES_STORE);
@@ -337,7 +337,7 @@ class OfflineStorageDB {
         id: category.id,
         name: category.name,
         icon: category.icon,
-        company_id: companyId,
+        user_id: userId,
         timestamp,
       };
       store.put(cached);
@@ -349,14 +349,14 @@ class OfflineStorageDB {
     });
   }
 
-  async getCachedCategories(companyId: string): Promise<CachedCategory[]> {
+  async getCachedCategories(userId: string): Promise<CachedCategory[]> {
     try {
       const db = await this.ensureDB();
       return new Promise((resolve) => {
         const transaction = db.transaction([CATEGORIES_STORE], 'readonly');
         const store = transaction.objectStore(CATEGORIES_STORE);
-        const index = store.index('company_id');
-        const request = index.getAll(IDBKeyRange.only(companyId));
+        const index = store.index('user_id');
+        const request = index.getAll(IDBKeyRange.only(userId));
 
         request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => resolve([]);
@@ -367,7 +367,7 @@ class OfflineStorageDB {
     }
   }
 
-  async cacheAreas(areas: any[], companyId: string): Promise<void> {
+  async cacheAreas(areas: any[], userId: string): Promise<void> {
     const db = await this.ensureDB();
     const transaction = db.transaction([AREAS_STORE], 'readwrite');
     const store = transaction.objectStore(AREAS_STORE);
@@ -377,7 +377,7 @@ class OfflineStorageDB {
       const cached: CachedArea = {
         id: area.id,
         name: area.name,
-        company_id: companyId,
+        user_id: userId,
         timestamp,
       };
       store.put(cached);
@@ -389,14 +389,14 @@ class OfflineStorageDB {
     });
   }
 
-  async getCachedAreas(companyId: string): Promise<CachedArea[]> {
+  async getCachedAreas(userId: string): Promise<CachedArea[]> {
     try {
       const db = await this.ensureDB();
       return new Promise((resolve) => {
         const transaction = db.transaction([AREAS_STORE], 'readonly');
         const store = transaction.objectStore(AREAS_STORE);
-        const index = store.index('company_id');
-        const request = index.getAll(IDBKeyRange.only(companyId));
+        const index = store.index('user_id');
+        const request = index.getAll(IDBKeyRange.only(userId));
 
         request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => resolve([]);
@@ -407,7 +407,7 @@ class OfflineStorageDB {
     }
   }
 
-  async cacheProyectos(proyectos: any[], companyId: string): Promise<void> {
+  async cacheProyectos(proyectos: any[], userId: string): Promise<void> {
     const db = await this.ensureDB();
     const transaction = db.transaction([PROYECTOS_STORE], 'readwrite');
     const store = transaction.objectStore(PROYECTOS_STORE);
@@ -417,7 +417,7 @@ class OfflineStorageDB {
       const cached: CachedProyecto = {
         id: proyecto.id,
         name: proyecto.name,
-        company_id: companyId,
+        user_id: userId,
         timestamp,
       };
       store.put(cached);
@@ -429,14 +429,14 @@ class OfflineStorageDB {
     });
   }
 
-  async getCachedProyectos(companyId: string): Promise<CachedProyecto[]> {
+  async getCachedProyectos(userId: string): Promise<CachedProyecto[]> {
     try {
       const db = await this.ensureDB();
       return new Promise((resolve) => {
         const transaction = db.transaction([PROYECTOS_STORE], 'readonly');
         const store = transaction.objectStore(PROYECTOS_STORE);
-        const index = store.index('company_id');
-        const request = index.getAll(IDBKeyRange.only(companyId));
+        const index = store.index('user_id');
+        const request = index.getAll(IDBKeyRange.only(userId));
 
         request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => resolve([]);

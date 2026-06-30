@@ -31,7 +31,7 @@ export function CategoriesSection() {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('company_id', user.company_id)
+        .eq('user_id', user.id)
         .order('display_order');
 
       if (error) throw error;
@@ -87,13 +87,13 @@ export function CategoriesSection() {
         if (error) throw error;
       } else {
         const maxOrder = categories.length > 0
-          ? Math.max(...categories.map(c => c.display_order))
+          ? Math.max(...categories.map(c => c.display_order ?? 0))
           : 0;
 
         const { error } = await supabase
           .from('categories')
           .insert({
-            company_id: user.company_id,
+            user_id: user.id,
             name: formData.name,
             description: formData.description || null,
             display_order: maxOrder + 1,

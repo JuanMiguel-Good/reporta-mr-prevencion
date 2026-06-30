@@ -71,10 +71,11 @@ export interface User {
 
 export interface Category {
   id: string;
-  company_id: string;
+  user_id: string;
+  company_id?: string | null;
   name: string;
   description: string | null;
-  display_order: number;
+  display_order: number | null;
   active: boolean;
   created_at: string;
 }

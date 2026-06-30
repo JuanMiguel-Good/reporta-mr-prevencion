@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Edit3, AlertCircle, Check, Loader2, ChevronRight, Plus, Shield, FileSearch, Lightbulb } from 'lucide-react';
+import { X, Sparkles, CreditCard as Edit3, AlertCircle, Check, Loader2, ChevronRight, Plus, Shield, FileSearch, Lightbulb } from 'lucide-react';
 import { Button } from '../common/Button';
 import { Category, ReportType, ReportPriority, AIAnalysisResult } from '../../types/database';
 import { supabase } from '../../lib/supabase';
@@ -74,7 +74,7 @@ export function IntelligentReportFlow({
     const { data: categoriesData } = await supabase
       .from('categories')
       .select('*')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('display_order');
 
@@ -90,7 +90,7 @@ export function IntelligentReportFlow({
 
     try {
       const categoryNames = categories.map(c => c.name);
-      const result = await analyzeImages(photos, user.company_id, categoryNames);
+      const result = await analyzeImages(photos, user.id, categoryNames);
 
       setAnalysis(result);
       setType(result.type);
@@ -127,14 +127,14 @@ export function IntelligentReportFlow({
     const { data: areasData } = await supabase
       .from('areas')
       .select('name')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('name');
 
     const { data: proyectosData } = await supabase
       .from('proyectos')
       .select('name')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('name');
 

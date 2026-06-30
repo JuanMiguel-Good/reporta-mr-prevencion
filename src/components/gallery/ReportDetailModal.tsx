@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, User, Calendar, ChevronLeft, ChevronRight, Upload, CheckCircle, XCircle, Edit2, Trash2, UserPlus, AlertTriangle, Clock, Camera, FileText } from 'lucide-react';
+import { X, MapPin, User, Calendar, ChevronLeft, ChevronRight, Upload, CheckCircle, XCircle, CreditCard as Edit2, Trash2, UserPlus, AlertTriangle, Clock, Camera, FileText } from 'lucide-react';
 import { Report, ReportStatus, Category, ReportType, ReportPriority } from '../../types/database';
 import { formatDate, getStatusLabel, getStatusColor, getPriorityLabel, getPriorityColor, getTypeLabel, getClosureDateStatus, getClosureDateMessage, formatDateOnly } from '../../utils/format';
 import { Button } from '../common/Button';
@@ -58,7 +58,7 @@ export function ReportDetailModal({ report, onClose, onUpdate, onAssignClick }: 
     const { data } = await supabase
       .from('categories')
       .select('*')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('display_order');
 
@@ -73,14 +73,14 @@ export function ReportDetailModal({ report, onClose, onUpdate, onAssignClick }: 
     const { data: areasData } = await supabase
       .from('areas')
       .select('name')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('name');
 
     const { data: proyectosData } = await supabase
       .from('proyectos')
       .select('name')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('name');
 

@@ -47,7 +47,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
     try {
       if (!navigator.onLine) {
-        const cached = await offlineStorage.getCachedCategories(user.company_id);
+        const cached = await offlineStorage.getCachedCategories(user.id);
         if (cached.length > 0) {
           setCategories(cached as Category[]);
           return;
@@ -57,7 +57,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('company_id', user.company_id)
+        .eq('user_id', user.id)
         .eq('active', true)
         .order('display_order');
 
@@ -65,11 +65,11 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
       if (data) {
         setCategories(data);
-        await offlineStorage.cacheCategories(data, user.company_id);
+        await offlineStorage.cacheCategories(data, user.id);
       }
     } catch (error) {
       console.error('Error loading categories:', error);
-      const cached = await offlineStorage.getCachedCategories(user.company_id);
+      const cached = await offlineStorage.getCachedCategories(user.id);
       if (cached.length > 0) {
         setCategories(cached as Category[]);
       }
@@ -83,8 +83,8 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
     try {
       if (!navigator.onLine) {
-        const cachedAreas = await offlineStorage.getCachedAreas(user.company_id);
-        const cachedProyectos = await offlineStorage.getCachedProyectos(user.company_id);
+        const cachedAreas = await offlineStorage.getCachedAreas(user.id);
+        const cachedProyectos = await offlineStorage.getCachedProyectos(user.id);
 
         if (cachedAreas.length > 0) {
           setAvailableAreas(cachedAreas.map(a => a.name));
@@ -102,7 +102,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
       const { data: areasData, error: areasError } = await supabase
         .from('areas')
         .select('name')
-        .eq('company_id', user.company_id)
+        .eq('user_id', user.id)
         .eq('active', true)
         .order('name');
 
@@ -115,7 +115,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
       const { data: proyectosData, error: proyectosError } = await supabase
         .from('proyectos')
         .select('name')
-        .eq('company_id', user.company_id)
+        .eq('user_id', user.id)
         .eq('active', true)
         .order('name');
 
@@ -127,20 +127,20 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
       if (areasData) {
         setAvailableAreas(areasData.map(a => a.name));
-        await offlineStorage.cacheAreas(areasData, user.company_id);
+        await offlineStorage.cacheAreas(areasData, user.id);
       }
 
       if (proyectosData) {
         setAvailableProyectos(proyectosData.map(p => p.name));
-        await offlineStorage.cacheProyectos(proyectosData, user.company_id);
+        await offlineStorage.cacheProyectos(proyectosData, user.id);
       }
 
       if (user.area) setArea(user.area);
       if (user.proyecto) setProyecto(user.proyecto);
     } catch (error) {
       console.error('Error loading areas and proyectos:', error);
-      const cachedAreas = await offlineStorage.getCachedAreas(user.company_id);
-      const cachedProyectos = await offlineStorage.getCachedProyectos(user.company_id);
+      const cachedAreas = await offlineStorage.getCachedAreas(user.id);
+      const cachedProyectos = await offlineStorage.getCachedProyectos(user.id);
 
       if (cachedAreas.length > 0) {
         setAvailableAreas(cachedAreas.map(a => a.name));

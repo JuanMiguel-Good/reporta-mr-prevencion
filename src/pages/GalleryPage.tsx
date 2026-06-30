@@ -103,7 +103,7 @@ export function GalleryPage() {
     const { data: categoriesData } = await supabase
       .from('categories')
       .select('*')
-      .eq('company_id', user.company_id)
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('name');
 

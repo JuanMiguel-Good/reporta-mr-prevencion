@@ -140,14 +140,14 @@ export function UsersPage() {
       const { data: areasData } = await supabase
         .from('areas')
         .select('name')
-        .eq('company_id', companyId)
+        .eq('user_id', user.id)
         .eq('active', true)
         .order('name');
 
       const { data: proyectosData } = await supabase
         .from('proyectos')
         .select('name')
-        .eq('company_id', companyId)
+        .eq('user_id', user.id)
         .eq('active', true)
         .order('name');
 

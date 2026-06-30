@@ -7,7 +7,7 @@ import { Button } from '../common/Button';
 
 interface Area {
   id: string;
-  company_id: string;
+  user_id: string;
   name: string;
   active: boolean;
   created_at: string;
@@ -36,7 +36,7 @@ export function AreasSection() {
       const { data, error } = await supabase
         .from('areas')
         .select('*')
-        .eq('company_id', user.company_id)
+        .eq('user_id', user.id)
         .order('name');
 
       if (error) throw error;
@@ -82,7 +82,7 @@ export function AreasSection() {
         const { error } = await supabase
           .from('areas')
           .insert({
-            company_id: user.company_id,
+            user_id: user.id,
             name: formData.name,
             active: true,
           });
