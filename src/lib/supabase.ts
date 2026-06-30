@@ -28,18 +28,14 @@ function removeCookie(name: string) {
 const cookieStorage = {
   async getItem(key: string): Promise<string | null> {
     if (typeof document === 'undefined') return null;
-    const value = getCookie(key);
-    console.log('[storage] getItem', key, '→', value ? '[found]' : 'null');
-    return value;
+    return getCookie(key);
   },
   async setItem(key: string, value: string): Promise<void> {
     if (typeof document === 'undefined') return;
-    console.log('[storage] setItem', key);
     setCookie(key, value);
   },
   async removeItem(key: string): Promise<void> {
     if (typeof document === 'undefined') return;
-    console.log('[storage] removeItem', key);
     removeCookie(key);
   },
 };
@@ -52,6 +48,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: typeof window !== 'undefined' ? cookieStorage : undefined,
     storageKey: 'mr-prevencion-auth',
     flowType: 'implicit',
+    // navigator.locks can deadlock when multiple tabs share the same storage key.
+    // Since cookieStorage is synchronous under the hood, the lock provides no benefit.
+    lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<unknown>) => fn(),
   },
 });
 
