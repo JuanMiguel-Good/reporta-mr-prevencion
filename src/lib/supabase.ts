@@ -26,18 +26,15 @@ function removeCookie(name: string) {
 }
 
 const cookieStorage = {
-  getItem(key: string): string | null {
+  async getItem(key: string): Promise<string | null> {
     if (typeof document === 'undefined') return null;
-    console.log('[cookieStorage] getItem llamado con key:', key);
-    const value = getCookie(key);
-    console.log('[cookieStorage] getItem retorna:', value);
-    return value;
+    return getCookie(key);
   },
-  setItem(key: string, value: string): void {
+  async setItem(key: string, value: string): Promise<void> {
     if (typeof document === 'undefined') return;
     setCookie(key, value);
   },
-  removeItem(key: string): void {
+  async removeItem(key: string): Promise<void> {
     if (typeof document === 'undefined') return;
     removeCookie(key);
   },
