@@ -45,14 +45,14 @@ export function IntelligentReportFlow({
   const [proposedClosure, setProposedClosure] = useState('');
   const [priority, setPriority] = useState<ReportPriority>('medium');
   const [area, setArea] = useState('');
-  const [proyecto, setProyecto] = useState('');
+  const [sede, setSede] = useState('');
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
-  const [availableProyectos, setAvailableProyectos] = useState<string[]>([]);
+  const [availableSedes, setAvailableSedes] = useState<string[]>([]);
   const [manualOverride, setManualOverride] = useState(false);
 
   useEffect(() => {
     loadCategories();
-    loadAreasAndProyectos();
+    loadCatalogs();
   }, [user]);
 
   useEffect(() => {
@@ -75,7 +75,6 @@ export function IntelligentReportFlow({
       .from('categories')
       .select('*')
       .eq('user_id', user.id)
-      .eq('active', true)
       .order('display_order');
 
     if (categoriesData) {
@@ -121,33 +120,29 @@ export function IntelligentReportFlow({
     }
   };
 
-  const loadAreasAndProyectos = async () => {
+  const loadCatalogs = async () => {
     if (!user) return;
 
-    const { data: areasData } = await supabase
+    const { data: areasData, error: areasError } = await supabase
       .from('areas')
       .select('name')
       .eq('user_id', user.id)
-      .eq('active', true)
       .order('name');
 
-    const { data: proyectosData } = await supabase
-      .from('proyectos')
+    if (areasError) console.error('Error loading areas:', areasError);
+
+    const { data: sedesData, error: sedesError } = await supabase
+      .from('company_sites')
       .select('name')
-      .eq('user_id', user.id)
-      .eq('active', true)
+      .eq('company_id', user.company_id)
       .order('name');
 
-    if (areasData) {
-      setAvailableAreas(areasData.map(a => a.name));
-    }
+    if (sedesError) console.error('Error loading sedes:', sedesError);
 
-    if (proyectosData) {
-      setAvailableProyectos(proyectosData.map(p => p.name));
-    }
+    if (areasData) setAvailableAreas(areasData.map(a => a.name));
+    if (sedesData) setAvailableSedes(sedesData.map(s => s.name));
 
     if (user.area) setArea(user.area);
-    if (user.proyecto) setProyecto(user.proyecto);
   };
 
   const handleFieldEdit = () => {
@@ -163,7 +158,7 @@ export function IntelligentReportFlow({
         proposedClosure,
         priority,
         area: area || undefined,
-        proyecto: proyecto || undefined,
+        proyecto: sede || undefined,
         aiAnalysis: analysis || undefined,
         manualOverride
       });
@@ -617,16 +612,16 @@ export function IntelligentReportFlow({
               </div>
 
               <div>
-                <label className="text-white text-sm mb-2 block">Proyecto</label>
+                <label className="text-white text-sm mb-2 block">Sede</label>
                 <select
-                  value={proyecto}
-                  onChange={(e) => setProyecto(e.target.value)}
+                  value={sede}
+                  onChange={(e) => setSede(e.target.value)}
                   className="w-full p-4 bg-white/10 border-2 border-white/30 rounded-xl text-white focus:bg-white/20 focus:border-cyan-400"
                 >
-                  <option value="" className="bg-gray-800">Selecciona un proyecto</option>
-                  {availableProyectos.map((p) => (
-                    <option key={p} value={p} className="bg-gray-800">
-                      {p}
+                  <option value="" className="bg-gray-800">Selecciona una sede</option>
+                  {availableSedes.map((s) => (
+                    <option key={s} value={s} className="bg-gray-800">
+                      {s}
                     </option>
                   ))}
                 </select>

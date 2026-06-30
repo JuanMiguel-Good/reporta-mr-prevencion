@@ -27,19 +27,19 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryId, setCategoryId] = useState<string>('');
   const [area, setArea] = useState('');
-  const [proyecto, setProyecto] = useState('');
+  const [sede, setSede] = useState('');
   const [description, setDescription] = useState('');
   const [proposedClosure, setProposedClosure] = useState('');
   const [customClosure, setCustomClosure] = useState('');
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
-  const [availableProyectos, setAvailableProyectos] = useState<string[]>([]);
+  const [availableSedes, setAvailableSedes] = useState<string[]>([]);
 
   const previewUrl = photos.length > 0 ? URL.createObjectURL(photos[0]) : '';
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
 
   useEffect(() => {
     loadCategories();
-    loadAreasAndProyectos();
+    loadCatalogs();
   }, [user]);
 
   const loadCategories = async () => {
@@ -58,7 +58,6 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
         .from('categories')
         .select('*')
         .eq('user_id', user.id)
-        .eq('active', true)
         .order('display_order');
 
       if (error) throw error;
@@ -76,26 +75,17 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
     }
   };
 
-  const loadAreasAndProyectos = async () => {
+  const loadCatalogs = async () => {
     if (!user) return;
-
-    console.log('Loading areas and proyectos for user:', user.id, 'company:', user.company_id);
 
     try {
       if (!navigator.onLine) {
         const cachedAreas = await offlineStorage.getCachedAreas(user.id);
-        const cachedProyectos = await offlineStorage.getCachedProyectos(user.id);
+        const cachedSedes = await offlineStorage.getCachedProyectos(user.id);
 
-        if (cachedAreas.length > 0) {
-          setAvailableAreas(cachedAreas.map(a => a.name));
-        }
-
-        if (cachedProyectos.length > 0) {
-          setAvailableProyectos(cachedProyectos.map(p => p.name));
-        }
-
+        if (cachedAreas.length > 0) setAvailableAreas(cachedAreas.map(a => a.name));
+        if (cachedSedes.length > 0) setAvailableSedes(cachedSedes.map(s => s.name));
         if (user.area) setArea(user.area);
-        if (user.proyecto) setProyecto(user.proyecto);
         return;
       }
 
@@ -103,55 +93,37 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
         .from('areas')
         .select('name')
         .eq('user_id', user.id)
-        .eq('active', true)
         .order('name');
 
-      if (areasError) {
-        console.error('Error loading areas:', areasError);
-      } else {
-        console.log('Areas loaded:', areasData);
-      }
+      if (areasError) console.error('Error loading areas:', areasError);
 
-      const { data: proyectosData, error: proyectosError } = await supabase
-        .from('proyectos')
+      const { data: sedesData, error: sedesError } = await supabase
+        .from('company_sites')
         .select('name')
-        .eq('user_id', user.id)
-        .eq('active', true)
+        .eq('company_id', user.company_id)
         .order('name');
 
-      if (proyectosError) {
-        console.error('Error loading proyectos:', proyectosError);
-      } else {
-        console.log('Proyectos loaded:', proyectosData);
-      }
+      if (sedesError) console.error('Error loading sedes:', sedesError);
 
       if (areasData) {
         setAvailableAreas(areasData.map(a => a.name));
         await offlineStorage.cacheAreas(areasData, user.id);
       }
 
-      if (proyectosData) {
-        setAvailableProyectos(proyectosData.map(p => p.name));
-        await offlineStorage.cacheProyectos(proyectosData, user.id);
+      if (sedesData) {
+        setAvailableSedes(sedesData.map(s => s.name));
+        await offlineStorage.cacheProyectos(sedesData, user.id);
       }
 
       if (user.area) setArea(user.area);
-      if (user.proyecto) setProyecto(user.proyecto);
     } catch (error) {
-      console.error('Error loading areas and proyectos:', error);
+      console.error('Error loading catalogs:', error);
       const cachedAreas = await offlineStorage.getCachedAreas(user.id);
-      const cachedProyectos = await offlineStorage.getCachedProyectos(user.id);
+      const cachedSedes = await offlineStorage.getCachedProyectos(user.id);
 
-      if (cachedAreas.length > 0) {
-        setAvailableAreas(cachedAreas.map(a => a.name));
-      }
-
-      if (cachedProyectos.length > 0) {
-        setAvailableProyectos(cachedProyectos.map(p => p.name));
-      }
-
+      if (cachedAreas.length > 0) setAvailableAreas(cachedAreas.map(a => a.name));
+      if (cachedSedes.length > 0) setAvailableSedes(cachedSedes.map(s => s.name));
       if (user.area) setArea(user.area);
-      if (user.proyecto) setProyecto(user.proyecto);
     }
   };
 
@@ -184,7 +156,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
         description,
         proposedClosure: finalClosure,
         area: area || undefined,
-        proyecto: proyecto || undefined,
+        proyecto: sede || undefined,
       });
     }
   };
@@ -330,16 +302,16 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
               </div>
 
               <div>
-                <label className="text-white text-sm mb-2 block">Proyecto</label>
+                <label className="text-white text-sm mb-2 block">Sede</label>
                 <select
-                  value={proyecto}
-                  onChange={(e) => setProyecto(e.target.value)}
+                  value={sede}
+                  onChange={(e) => setSede(e.target.value)}
                   className="w-full p-4 bg-white/10 border-2 border-white/30 rounded-xl text-white focus:bg-white/20 focus:border-white/50"
                 >
-                  <option value="" className="bg-gray-800">Selecciona un proyecto</option>
-                  {availableProyectos.map((p) => (
-                    <option key={p} value={p} className="bg-gray-800">
-                      {p}
+                  <option value="" className="bg-gray-800">Selecciona una sede</option>
+                  {availableSedes.map((s) => (
+                    <option key={s} value={s} className="bg-gray-800">
+                      {s}
                     </option>
                   ))}
                 </select>
@@ -366,7 +338,6 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
                 placeholder="Describe qué observaste..."
                 className="w-full h-32 p-4 bg-white/10 border-2 border-white/30 rounded-xl text-white placeholder-white/50 focus:bg-white/20 focus:border-white/50 resize-none"
               />
-
 
               <Button
                 onClick={handleDescriptionNext}
