@@ -67,10 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const init = async () => {
       try {
-        const { data: { session } } = await withTimeout(
+        const sessionResult = await withTimeout(
           supabase.auth.getSession(),
           5000
         );
+        console.log('[AuthContext] getSession() resultado:', sessionResult);
+        const { data: { session } } = sessionResult;
 
         if (!mounted) return;
 

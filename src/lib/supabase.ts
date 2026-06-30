@@ -28,7 +28,10 @@ function removeCookie(name: string) {
 const cookieStorage = {
   getItem(key: string): string | null {
     if (typeof document === 'undefined') return null;
-    return getCookie(key);
+    console.log('[cookieStorage] getItem llamado con key:', key);
+    const value = getCookie(key);
+    console.log('[cookieStorage] getItem retorna:', value);
+    return value;
   },
   setItem(key: string, value: string): void {
     if (typeof document === 'undefined') return;
