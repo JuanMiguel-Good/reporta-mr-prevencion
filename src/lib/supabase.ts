@@ -7,12 +7,45 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Faltan variables de entorno de Supabase.');
 }
 
+const COOKIE_DOMAIN = '.mrprevencion.app';
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 días en segundos
+
+function setCookie(name: string, value: string) {
+  const encoded = encodeURIComponent(value);
+  document.cookie = `${name}=${encoded}; domain=${COOKIE_DOMAIN}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
+}
+
+function getCookie(name: string): string | null {
+  const match = document.cookie.split('; ').find((c) => c.startsWith(`${name}=`));
+  if (!match) return null;
+  return decodeURIComponent(match.slice(name.length + 1));
+}
+
+function removeCookie(name: string) {
+  document.cookie = `${name}=; domain=${COOKIE_DOMAIN}; path=/; max-age=0; SameSite=Lax; Secure`;
+}
+
+const cookieStorage = {
+  getItem(key: string): string | null {
+    if (typeof document === 'undefined') return null;
+    return getCookie(key);
+  },
+  setItem(key: string, value: string): void {
+    if (typeof document === 'undefined') return;
+    setCookie(key, value);
+  },
+  removeItem(key: string): void {
+    if (typeof document === 'undefined') return;
+    removeCookie(key);
+  },
+};
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storage: typeof window !== 'undefined' ? cookieStorage : undefined,
     storageKey: 'mr-prevencion-auth',
     flowType: 'pkce',
   },
