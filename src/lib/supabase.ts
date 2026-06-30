@@ -28,14 +28,18 @@ function removeCookie(name: string) {
 const cookieStorage = {
   async getItem(key: string): Promise<string | null> {
     if (typeof document === 'undefined') return null;
-    return getCookie(key);
+    const value = getCookie(key);
+    console.log('[storage] getItem', key, '→', value ? '[found]' : 'null');
+    return value;
   },
   async setItem(key: string, value: string): Promise<void> {
     if (typeof document === 'undefined') return;
+    console.log('[storage] setItem', key);
     setCookie(key, value);
   },
   async removeItem(key: string): Promise<void> {
     if (typeof document === 'undefined') return;
+    console.log('[storage] removeItem', key);
     removeCookie(key);
   },
 };
