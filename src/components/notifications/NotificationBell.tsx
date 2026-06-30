@@ -85,6 +85,7 @@ export function NotificationBell() {
         .from('notifications')
         .select('*')
         .eq('user_id', userData.user.id)
+        .eq('source_app', 'reporta')
         .order('created_at', { ascending: false })
         .limit(10);
 

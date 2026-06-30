@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, UserX, UserCheck, Search, Download, Upload, AlertCircle, CheckCircle2, Edit2, Trash2, Key } from 'lucide-react';
+import { Plus, UserX, UserCheck, Search, Download, Upload, AlertCircle, CheckCircle2, CreditCard as Edit2, Trash2, Key } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { User, UserRole } from '../types/database';
@@ -88,7 +88,7 @@ export function UsersPage() {
     setLoading(true);
     try {
       let query = supabase
-        .from('users')
+        .from('profiles')
         .select(`
           *,
           company:companies(name)
@@ -177,7 +177,7 @@ export function UsersPage() {
     setCreating(true);
     try {
       const { data: existingUser } = await supabase
-        .from('users')
+        .from('profiles')
         .select('dni')
         .eq('dni', formData.dni)
         .maybeSingle();
@@ -248,7 +248,7 @@ export function UsersPage() {
   const handleToggleUserActive = async (userId: string, currentActive: boolean) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ active: !currentActive })
         .eq('id', userId);
 
@@ -268,7 +268,7 @@ export function UsersPage() {
     setUpdating(true);
     try {
       const { error: updateError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           full_name: formData.full_name,
           role: formData.role,
@@ -309,7 +309,7 @@ export function UsersPage() {
     setDeleting(true);
     try {
       const { error: deleteError } = await supabase
-        .from('users')
+        .from('profiles')
         .delete()
         .eq('id', deletingUser.id);
 

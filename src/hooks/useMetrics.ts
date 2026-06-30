@@ -50,7 +50,7 @@ export function useMetrics(startDate: Date, endDate: Date, companyId: string) {
       let usersMap = new Map();
       if (allUserIds.length > 0) {
         const { data: users } = await supabase
-          .from('users')
+          .from('profiles')
           .select('id, full_name, dni')
           .in('id', allUserIds);
 

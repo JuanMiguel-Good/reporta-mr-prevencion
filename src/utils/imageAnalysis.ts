@@ -46,58 +46,30 @@ export async function analyzeImages(
   return result;
 }
 
+// AI availability is determined by the current user's subscription_status in profiles.
+// active and trial subscriptions have AI enabled; expired/cancelled do not.
 export async function getAISettings(companyId: string) {
-  console.log('🔍 Checking AI availability for company:', companyId);
-
   const { data: sessionData } = await supabase.auth.getSession();
-  console.log('🔐 Current session:', sessionData.session ? 'Active' : 'No session');
-  console.log('👤 User ID from session:', sessionData.session?.user?.id);
+  const userId = sessionData.session?.user?.id;
 
-  const { data: planData, error: planError } = await supabase
-    .from('company_plans')
-    .select('plan:plans(ai_enabled, ai_monthly_limit)')
-    .eq('company_id', companyId)
+  if (!userId) {
+    return { company_id: companyId, ai_enabled: false, monthly_analysis_limit: 0 };
+  }
+
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('subscription_status')
+    .eq('id', userId)
     .maybeSingle();
 
-  if (!planError && planData?.plan) {
-    const settings = {
-      company_id: companyId,
-      ai_enabled: planData.plan.ai_enabled,
-      monthly_analysis_limit: planData.plan.ai_monthly_limit,
-    };
+  const status = profileData?.subscription_status;
+  const aiEnabled = status === 'active' || status === 'trial';
 
-    console.log('[OK] AI Settings (from plan):', settings);
-
-    if (settings.ai_enabled) {
-      console.log('[AI] AI is enabled - using AI mode');
-    } else {
-      console.log('[Manual] AI is disabled - using manual mode');
-    }
-
-    return settings;
-  }
-
-  const { data, error } = await supabase
-    .from('company_ai_settings')
-    .select('*')
-    .eq('company_id', companyId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('[Error] Error fetching AI settings:', error);
-    console.error('Error details:', JSON.stringify(error, null, 2));
-    return null;
-  }
-
-  console.log('[OK] AI Settings (from company_ai_settings):', data);
-
-  if (data && data.ai_enabled) {
-    console.log('[AI] AI is enabled - using AI mode');
-  } else {
-    console.log('[Manual] AI is disabled - using manual mode');
-  }
-
-  return data;
+  return {
+    company_id: companyId,
+    ai_enabled: aiEnabled,
+    monthly_analysis_limit: aiEnabled ? 100 : 0,
+  };
 }
 
 export async function getAIUsageStats(companyId: string) {

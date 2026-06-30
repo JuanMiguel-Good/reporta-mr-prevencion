@@ -121,11 +121,10 @@ export function AnnouncementsPage() {
   const loadSSTManagerCount = async () => {
     try {
       const { count, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id', { count: 'exact', head: true })
         .eq('role', 'sst_manager')
-        .eq('active', true)
-        .not('email', 'is', null);
+        .not('company_id', 'is', null);
 
       if (error) throw error;
       setSstManagerCount(count || 0);
@@ -141,20 +140,19 @@ export function AnnouncementsPage() {
         .select(`
           id,
           name,
-          users!users_company_id_fkey (
+          profiles!profiles_company_id_fkey (
             id
           )
         `)
-        .eq('users.role', 'sst_manager')
-        .eq('users.active', true)
-        .not('users.email', 'is', null);
+        .eq('profiles.role', 'sst_manager')
+        .not('profiles.email', 'is', null);
 
       if (error) throw error;
 
       const companiesWithCount = (data || []).map(company => ({
         id: company.id,
         name: company.name,
-        manager_count: Array.isArray(company.users) ? company.users.length : 0,
+        manager_count: Array.isArray((company as any).profiles) ? (company as any).profiles.length : 0,
       })).filter(c => c.manager_count > 0);
 
       setCompanies(companiesWithCount);
@@ -166,19 +164,17 @@ export function AnnouncementsPage() {
   const loadSSTManagers = async () => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select(`
           id,
           full_name,
-          email,
           company_id,
           companies:company_id (
             name
           )
         `)
         .eq('role', 'sst_manager')
-        .eq('active', true)
-        .not('email', 'is', null)
+        .not('company_id', 'is', null)
         .order('full_name');
 
       if (error) throw error;
@@ -223,11 +219,9 @@ export function AnnouncementsPage() {
 
       if (filters.type === 'companies' && filters.company_ids && filters.company_ids.length > 0) {
         const { count, error } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*', { count: 'exact', head: true })
           .eq('role', 'sst_manager')
-          .eq('active', true)
-          .not('email', 'is', null)
           .in('company_id', filters.company_ids);
 
         if (error) {
@@ -281,9 +275,9 @@ export function AnnouncementsPage() {
       }
 
       const { data: userData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id')
-        .eq('auth_user_id', user?.id)
+        .eq('id', user?.id)
         .maybeSingle();
 
       if (!userData) throw new Error('User not found');
@@ -388,9 +382,8 @@ export function AnnouncementsPage() {
           email_sent,
           email_sent_at,
           read_at,
-          users:user_id (
+          profiles:user_id (
             full_name,
-            email,
             companies:company_id (
               name
             )

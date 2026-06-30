@@ -54,19 +54,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-export type UserRole = 'superadmin' | 'prevencionista' | 'trabajador';
+export type UserRole = 'worker' | 'sst_manager' | 'hr_observer' | 'super_admin';
 
 export interface Profile {
   id: string;
   role: UserRole;
   full_name: string;
   dni: string | null;
-  phone: string | null;
   company_id: string | null;
   subscription_status: 'active' | 'trial' | 'expired' | 'cancelled' | null;
   subscription_end: string | null;
-  avatar_url: string | null;
-  created_at: string;
 }
 
 export interface Company {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Filter, Search, UserPlus, AlertCircle, Grid, List, AlertTriangle, Clock, X, Download, WifiOff } from 'lucide-react';
+import { Filter, Search, UserPlus, AlertCircle, Grid2x2 as Grid, List, AlertTriangle, Clock, X, Download, WifiOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Report, ReportStatus, ReportPriority, ReportType, User, Category } from '../types/database';
@@ -86,11 +86,10 @@ export function GalleryPage() {
     if (!user) return;
 
     const { data } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .eq('company_id', user.company_id)
       .eq('can_close_reports', true)
-      .eq('active', true)
       .order('full_name');
 
     if (data) {
@@ -114,7 +113,7 @@ export function GalleryPage() {
 
     let reportsQuery = supabase
       .from('reports')
-      .select('area, proyecto, reporter:users!reports_reporter_id_fkey(id, full_name)')
+      .select('area, proyecto, reporter:profiles!reports_reporter_id_fkey(id, full_name)')
       .eq('company_id', user.company_id);
 
     if (user.role === 'worker') {
@@ -156,9 +155,9 @@ export function GalleryPage() {
         .from('reports')
         .select(`
           *,
-          reporter:users!reports_reporter_id_fkey(*),
-          assigned_to:users!reports_assigned_to_id_fkey(*),
-          closed_by:users!reports_closed_by_id_fkey(*),
+          reporter:profiles!reports_reporter_id_fkey(*),
+          assigned_to:profiles!reports_assigned_to_id_fkey(*),
+          closed_by:profiles!reports_closed_by_id_fkey(*),
           category:categories(*),
           photos:report_photos(*),
           history:report_history(*)
@@ -256,9 +255,9 @@ export function GalleryPage() {
         .from('reports')
         .select(`
           *,
-          reporter:users!reports_reporter_id_fkey(*),
-          assigned_to:users!reports_assigned_to_id_fkey(*),
-          closed_by:users!reports_closed_by_id_fkey(*),
+          reporter:profiles!reports_reporter_id_fkey(*),
+          assigned_to:profiles!reports_assigned_to_id_fkey(*),
+          closed_by:profiles!reports_closed_by_id_fkey(*),
           category:categories(*),
           photos:report_photos(*),
           history:report_history(*)

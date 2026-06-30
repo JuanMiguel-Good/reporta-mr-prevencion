@@ -52,17 +52,20 @@ export interface User {
   id: string;
   auth_user_id: string;
   email: string | null;
-  dni: string;
+  dni: string | null;
   full_name: string;
   role: UserRole;
-  company_id: string;
-  active: boolean;
+  company_id: string | null;
+  subscription_status?: 'active' | 'trial' | 'expired' | 'cancelled' | null;
+  subscription_end?: string | null;
+  // Fields below are absent from the central profiles table; treated as optional/undefined
+  active?: boolean;
   area?: string | null;
   proyecto?: string | null;
   can_close_reports?: boolean;
   is_multi_company_manager?: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
   company?: Company;
 }
 
@@ -231,11 +234,12 @@ export interface UsageLimitRequest {
 export interface Notification {
   id: string;
   user_id: string;
-  company_id: string;
-  type: NotificationType;
+  source_app: string;
+  type: string;
   title: string;
   message: string;
   data: any | null;
+  url: string | null;
   read: boolean;
   created_at: string;
 }

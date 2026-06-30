@@ -88,6 +88,32 @@ export async function sendPushNotificationToMultiple(params: SendNotificationToM
   }
 }
 
+export async function createInAppNotification(params: {
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  data?: Record<string, any>;
+  url?: string;
+}): Promise<void> {
+  const { error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: params.userId,
+      source_app: 'reporta',
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      data: params.data || {},
+      url: params.url ?? null,
+      read: false,
+    });
+
+  if (error) {
+    console.error('Error inserting notification:', error);
+  }
+}
+
 export async function notifyReportStatusChange(
   reportId: string,
   reportDescription: string,
@@ -104,16 +130,10 @@ export async function notifyReportStatusChange(
   const title = 'Actualización de Reporte';
   const body = `Tu reporte "${reportDescription.substring(0, 50)}..." cambió a: ${statusLabels[newStatus] || newStatus}`;
 
-  await sendPushNotification({
-    userId,
-    title,
-    body,
-    data: {
-      reportId,
-      status: newStatus,
-      url: '/gallery',
-    },
-  });
+  await Promise.all([
+    sendPushNotification({ userId, title, body, data: { reportId, status: newStatus, url: '/gallery' } }),
+    createInAppNotification({ userId, type: 'report_status_changed', title, message: body, data: { reportId, status: newStatus }, url: '/gallery' }),
+  ]);
 }
 
 export async function notifyNewReportAssigned(
@@ -124,98 +144,8 @@ export async function notifyNewReportAssigned(
   const title = 'Nuevo Reporte Asignado';
   const body = `Se te ha asignado un nuevo reporte: "${reportDescription.substring(0, 50)}..."`;
 
-  await sendPushNotification({
-    userId: assignedToId,
-    title,
-    body,
-    data: {
-      reportId,
-      url: '/gallery',
-    },
-  });
-}
-
-export async function processNotificationQueue(): Promise<void> {
-  try {
-    const { data: pendingNotifications, error } = await supabase
-      .from('notification_queue')
-      .select('*')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(50);
-
-    if (error) {
-      console.error('Error fetching pending notifications:', error);
-      return;
-    }
-
-    if (!pendingNotifications || pendingNotifications.length === 0) {
-      return;
-    }
-
-    for (const notification of pendingNotifications) {
-      let pushSuccess = false;
-
-      try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('company_id')
-          .eq('id', notification.user_id)
-          .maybeSingle();
-
-        if (!userData) {
-          console.error('User not found for notification:', notification.user_id);
-          continue;
-        }
-
-        const notificationType =
-          notification.title.toLowerCase().includes('nuevo reporte') ? 'report_created' :
-          notification.title.toLowerCase().includes('asignado') ? 'report_assigned' :
-          notification.title.toLowerCase().includes('evidencia') ? 'evidence_uploaded' :
-          notification.title.toLowerCase().includes('cerrado') ? 'report_closed' :
-          'report_status_changed';
-
-        const { error: insertError } = await supabase
-          .from('notifications')
-          .insert({
-            user_id: notification.user_id,
-            company_id: userData.company_id,
-            type: notificationType,
-            title: notification.title,
-            message: notification.body,
-            data: notification.data || {},
-            read: false,
-          });
-
-        if (insertError) {
-          console.error('Error inserting notification:', insertError);
-          continue;
-        }
-
-        pushSuccess = await sendPushNotification({
-          userId: notification.user_id,
-          title: notification.title,
-          body: notification.body,
-          data: notification.data || {},
-        });
-      } catch (err) {
-        console.error('Error processing notification:', err);
-      }
-
-      const { error: updateError } = await supabase
-        .from('notification_queue')
-        .update({
-          status: 'sent',
-          sent_at: new Date().toISOString(),
-          error_message: pushSuccess ? null : 'Push notification failed but in-app notification created',
-        })
-        .eq('id', notification.id);
-
-      if (updateError) {
-        console.error('Error updating notification status:', updateError);
-      }
-    }
-  } catch (error) {
-    console.error('Error processing notification queue:', error);
-  }
+  await Promise.all([
+    sendPushNotification({ userId: assignedToId, title, body, data: { reportId, url: '/gallery' } }),
+    createInAppNotification({ userId: assignedToId, type: 'report_assigned', title, message: body, data: { reportId }, url: '/gallery' }),
+  ]);
 }

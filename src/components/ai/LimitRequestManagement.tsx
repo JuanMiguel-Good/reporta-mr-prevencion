@@ -31,7 +31,7 @@ export function LimitRequestManagement() {
         .select(`
           *,
           company:companies(name),
-          requester:users!requested_by(full_name)
+          requester:profiles!requested_by(full_name)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });

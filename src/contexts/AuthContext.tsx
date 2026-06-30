@@ -3,16 +3,28 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { Profile, UserRole } from '../lib/supabase';
 
+// The app-level user combines auth identity with profile data.
+// Fields absent from the central `profiles` table (area, proyecto,
+// can_close_reports, active) will be undefined — callers treat them as falsy.
+export type AppUser = Profile & {
+  auth_user_id: string;
+  email: string | null;
+  active?: boolean;
+  area?: string | null;
+  proyecto?: string | null;
+  can_close_reports?: boolean;
+};
+
 interface AuthContextType {
-  user: SupabaseUser | null;
+  user: AppUser | null;
   profile: Profile | null;
   role: UserRole | null;
   loading: boolean;
-  isSuperadmin: boolean;
-  isPrevencionista: boolean;
-  isTrabajador: boolean;
-  isManager: boolean;
+  isSuperAdmin: boolean;
+  isSstManager: boolean;
+  isHrObserver: boolean;
   isWorker: boolean;
+  isManager: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -30,16 +42,16 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = async (userId: string): Promise<void> => {
+  const loadProfile = async (supabaseUser: SupabaseUser): Promise<void> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('id', userId)
+        .select('id, company_id, subscription_status, subscription_end, role, full_name, dni')
+        .eq('id', supabaseUser.id)
         .single();
       if (!error && data) {
         setProfile(data as Profile);
@@ -55,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
-        await loadProfile(currentUser.id);
+        await loadProfile(currentUser);
       }
     } catch {
       // profile stays as-is
@@ -72,15 +84,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
 
         if (session?.user) {
-          setUser(session.user);
-          await loadProfile(session.user.id);
+          setAuthUser(session.user);
+          await loadProfile(session.user);
         } else {
-          setUser(null);
+          setAuthUser(null);
           setProfile(null);
         }
       } catch {
         if (mounted) {
-          setUser(null);
+          setAuthUser(null);
           setProfile(null);
         }
       } finally {
@@ -95,15 +107,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
         try {
           if (session?.user) {
-            setUser(session.user);
-            await loadProfile(session.user.id);
+            setAuthUser(session.user);
+            await loadProfile(session.user);
           } else {
-            setUser(null);
+            setAuthUser(null);
             setProfile(null);
           }
         } catch {
           if (mounted) {
-            setUser(null);
+            setAuthUser(null);
             setProfile(null);
           }
         } finally {
@@ -129,22 +141,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn('Logout warning:', err);
     } finally {
-      setUser(null);
+      setAuthUser(null);
       setProfile(null);
     }
   };
 
   const role = profile?.role ?? null;
-  const isSuperadmin = role === 'superadmin';
-  const isPrevencionista = role === 'prevencionista';
-  const isTrabajador = role === 'trabajador';
-  const isManager = isSuperadmin || isPrevencionista;
-  const isWorker = isTrabajador;
+  const isSuperAdmin = role === 'super_admin';
+  const isSstManager = role === 'sst_manager';
+  const isHrObserver = role === 'hr_observer';
+  const isWorker = role === 'worker';
+  const isManager = isSuperAdmin || isSstManager;
+
+  // Build unified app user merging auth identity + profile
+  const user: AppUser | null = profile && authUser
+    ? {
+        ...profile,
+        auth_user_id: authUser.id,
+        email: authUser.email ?? null,
+      }
+    : null;
 
   return (
     <AuthContext.Provider value={{
       user, profile, role, loading,
-      isSuperadmin, isPrevencionista, isTrabajador,
+      isSuperAdmin, isSstManager, isHrObserver,
       isManager, isWorker,
       signIn, signOut, refreshUser,
     }}>

@@ -43,6 +43,7 @@ export function GlobalNotificationManager() {
           .from('notifications')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
+          .eq('source_app', 'reporta')
           .eq('read', false);
 
         if (error) {
