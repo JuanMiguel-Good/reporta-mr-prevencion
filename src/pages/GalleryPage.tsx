@@ -88,7 +88,6 @@ export function GalleryPage() {
     const { data } = await supabase
       .from('profiles')
       .select('*')
-      .eq('company_id', user.company_id)
       .eq('can_close_reports', true)
       .order('full_name');
 
@@ -104,7 +103,6 @@ export function GalleryPage() {
       .from('categories')
       .select('*')
       .eq('user_id', user.id)
-      .eq('active', true)
       .order('name');
 
     if (categoriesData) {
@@ -113,8 +111,7 @@ export function GalleryPage() {
 
     let reportsQuery = supabase
       .from('reports')
-      .select('area, proyecto, reporter:profiles!reports_reporter_id_fkey(id, full_name)')
-      .eq('company_id', user.company_id);
+      .select('area, proyecto, reporter:profiles!reports_reporter_id_fkey(id, full_name)');
 
     if (user.role === 'worker') {
       reportsQuery = reportsQuery.or(`assigned_to_id.eq.${user.id},reporter_id.eq.${user.id}`);
@@ -162,7 +159,6 @@ export function GalleryPage() {
           photos:report_photos(*),
           history:report_history(*)
         `)
-        .eq('company_id', user.company_id)
         .order('created_at', { ascending: false });
 
       if (user.role === 'worker') {
