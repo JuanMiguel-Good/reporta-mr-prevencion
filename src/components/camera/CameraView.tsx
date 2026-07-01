@@ -109,7 +109,16 @@ export function CameraView({ onPhotoCaptured, onClose }: CameraViewProps) {
     } catch (err: any) {
       console.error('Error accessing camera:', err);
       setHasPermission(false);
-      setError('No se pudo acceder a la cámara. Por favor, verifica los permisos.');
+      const name = err?.name || '';
+      if (name === 'NotReadableError' || name === 'TrackStartError') {
+        setError('La cámara está siendo usada por otra aplicación. Cierra Teams, Zoom, Meet u otra app que use la cámara y luego presiona Reintentar.');
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setError('No se encontró ninguna cámara en este dispositivo.');
+      } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setError('Permiso de cámara denegado. Habilita el acceso en la configuración de tu navegador y luego presiona Reintentar.');
+      } else {
+        setError('No se pudo acceder a la cámara. Por favor, verifica los permisos e intenta nuevamente.');
+      }
     }
   };
 
@@ -189,10 +198,10 @@ export function CameraView({ onPhotoCaptured, onClose }: CameraViewProps) {
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
         <Camera className="w-16 h-16 text-gray-400 mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Acceso a la cámara denegado
+          No se puede acceder a la cámara
         </h3>
         <p className="text-gray-600 mb-4">
-          Para tomar fotos, necesitas permitir el acceso a la cámara en la configuración de tu navegador.
+          {error || 'No se pudo acceder a la cámara. Por favor, verifica los permisos e intenta nuevamente.'}
         </p>
         <Button onClick={startCamera} variant="primary">
           Reintentar
