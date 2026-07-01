@@ -144,10 +144,12 @@ export function CameraPage() {
 
       if (reportError) throw reportError;
 
+      const photoUrls: string[] = [];
       for (let i = 0; i < capturedPhotos.length; i++) {
         const photo = capturedPhotos[i];
         const compressedPhoto = await compressImage(photo);
         const photoUrl = await uploadPhoto(compressedPhoto, user.company_id, report.id, false);
+        photoUrls.push(photoUrl);
 
         await supabase.from('report_photos').insert({
           report_id: report.id,
@@ -156,6 +158,13 @@ export function CameraPage() {
           is_evidence: false,
           uploaded_by: user.id,
         });
+      }
+
+      if (photoUrls.length > 0) {
+        await supabase
+          .from('reports')
+          .update({ photo_urls: photoUrls })
+          .eq('id', report.id);
       }
 
       setCapturedPhotos([]);
