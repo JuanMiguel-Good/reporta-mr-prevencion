@@ -91,7 +91,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
       const { data: areasData, error: areasError } = await supabase
         .from('areas')
-        .select('name')
+        .select('id, name')
         .eq('user_id', user.id)
         .order('name');
 
@@ -99,7 +99,7 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
       const { data: sedesData, error: sedesError } = await supabase
         .from('company_sites')
-        .select('name')
+        .select('id, name')
         .eq('company_id', user.company_id)
         .order('name');
 
@@ -112,7 +112,11 @@ export function ReportFlow({ photos, onSubmit, onAddMorePhotos, onCancel }: Repo
 
       if (sedesData) {
         setAvailableSedes(sedesData.map(s => s.name));
-        await offlineStorage.cacheProyectos(sedesData, user.id);
+        try {
+          await offlineStorage.cacheProyectos(sedesData, user.id);
+        } catch (e) {
+          console.error('Error caching sedes:', e);
+        }
       }
 
       if (user.area) setArea(user.area);

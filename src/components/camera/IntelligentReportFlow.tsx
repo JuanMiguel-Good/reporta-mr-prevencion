@@ -125,7 +125,7 @@ export function IntelligentReportFlow({
 
     const { data: areasData, error: areasError } = await supabase
       .from('areas')
-      .select('name')
+      .select('id, name')
       .eq('user_id', user.id)
       .order('name');
 
@@ -133,7 +133,7 @@ export function IntelligentReportFlow({
 
     const { data: sedesData, error: sedesError } = await supabase
       .from('company_sites')
-      .select('name')
+      .select('id, name')
       .eq('company_id', user.company_id)
       .order('name');
 
