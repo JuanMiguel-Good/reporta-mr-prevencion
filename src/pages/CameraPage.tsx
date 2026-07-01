@@ -132,14 +132,12 @@ export function CameraPage() {
           type: data.type,
           category_id: data.categoryId,
           description: data.description,
-          proposed_closure: data.proposedClosure,
           area: data.area || null,
           proyecto: data.proyecto || null,
           status: 'reported',
           priority: data.priority || data.aiAnalysis?.priority || 'medium',
           ai_analysis: data.aiAnalysis || null,
           ai_confidence_score: data.aiAnalysis?.confidence || null,
-          manual_override: data.manualOverride || false,
         })
         .select()
         .single();
