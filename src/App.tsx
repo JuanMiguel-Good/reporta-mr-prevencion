@@ -82,27 +82,9 @@ function AppRoutes() {
 
         <Route path="/" element={<Navigate to={defaultRoute} replace />} />
 
-        <Route
-          path="/users"
-          element={
-            <ProtectedRoute allowedRoles={['sst_manager', 'super_admin']}>
-              <AppLayout>
-                <UsersPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/users" element={<Navigate to="/gallery" replace />} />
 
-        <Route
-          path="/configuration"
-          element={
-            <ProtectedRoute allowedRoles={['sst_manager', 'hr_observer', 'super_admin']}>
-              <AppLayout>
-                <ConfigurationPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/configuration" element={<Navigate to="/gallery" replace />} />
 
         <Route
           path="/metrics"
