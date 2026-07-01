@@ -54,7 +54,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', supabaseUser.id)
         .single();
       if (!error && data) {
-        setProfile(data as Profile);
+        const roleMap: Record<string, string> = {
+          trabajador: 'worker',
+          prevencionista: 'sst_manager',
+          superadmin: 'super_admin',
+        };
+        const mappedRole = roleMap[data.role as string] ?? data.role;
+        setProfile({ ...data, role: mappedRole } as Profile);
       } else {
         setProfile(null);
       }
