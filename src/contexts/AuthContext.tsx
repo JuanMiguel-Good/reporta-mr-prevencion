@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const roleMap: Record<string, string> = {
           trabajador: 'worker',
           prevencionista: 'sst_manager',
-          superadmin: 'super_admin',
+          superadmin: 'sst_manager',
         };
         const mappedRole = roleMap[data.role as string] ?? data.role;
         setProfile({ ...data, role: mappedRole } as Profile);
