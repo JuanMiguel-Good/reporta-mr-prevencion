@@ -1,5 +1,5 @@
 const DB_NAME = 'reporta-offline';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const REPORTS_STORE = 'pending_reports';
 const PHOTOS_STORE = 'pending_photos';
 const CATEGORIES_STORE = 'categories_cache';
@@ -94,6 +94,17 @@ class OfflineStorageDB {
 
         request.onupgradeneeded = (event) => {
           const db = (event.target as IDBOpenDBRequest).result;
+          const oldVersion = event.oldVersion;
+
+          // v4: recreate categories_cache and areas_cache to fix stale indexes
+          if (oldVersion < 4) {
+            if (db.objectStoreNames.contains(CATEGORIES_STORE)) {
+              db.deleteObjectStore(CATEGORIES_STORE);
+            }
+            if (db.objectStoreNames.contains(AREAS_STORE)) {
+              db.deleteObjectStore(AREAS_STORE);
+            }
+          }
 
           if (!db.objectStoreNames.contains(REPORTS_STORE)) {
             const reportsStore = db.createObjectStore(REPORTS_STORE, { keyPath: 'id' });
