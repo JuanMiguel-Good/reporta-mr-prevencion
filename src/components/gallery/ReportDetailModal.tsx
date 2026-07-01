@@ -41,9 +41,10 @@ export function ReportDetailModal({ report, onClose, onUpdate, onAssignClick }: 
 
   const photos = report.photos || [];
   const canUploadEvidence = report.assigned_to_id === user?.id && (report.status === 'assigned' || report.status === 'evidence_rejected');
-  const canValidate = user?.role === 'sst_manager' && report.status === 'in_review';
-  const canEditOrDelete = user?.role === 'sst_manager' && report.status === 'reported';
-  const canAssign = user?.role === 'sst_manager' && report.status === 'reported' && onAssignClick;
+  const isManager = user?.role === 'sst_manager' || user?.role === 'super_admin';
+  const canValidate = isManager && report.status === 'in_review';
+  const canEditOrDelete = isManager && report.status === 'reported';
+  const canAssign = isManager && report.status === 'reported' && onAssignClick;
 
   useEffect(() => {
     if (user && canEditOrDelete) {

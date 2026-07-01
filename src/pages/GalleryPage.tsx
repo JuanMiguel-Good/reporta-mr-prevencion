@@ -305,8 +305,8 @@ export function GalleryPage() {
     }
   };
 
-  const canManage = user?.role === 'sst_manager';
-  const canExport = user?.role === 'sst_manager' || user?.role === 'hr_observer';
+  const canManage = user?.role === 'sst_manager' || user?.role === 'super_admin';
+  const canExport = user?.role === 'sst_manager' || user?.role === 'hr_observer' || user?.role === 'super_admin';
 
   const handleExportToExcel = async () => {
     if (filteredReports.length === 0) {
