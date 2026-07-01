@@ -111,7 +111,7 @@ export function GalleryPage() {
 
     let reportsQuery = supabase
       .from('reports')
-      .select('area, proyecto, reporter:users!reports_reporter_id_fkey(id, full_name)');
+      .select('area, proyecto, reporter:profiles!reports_reporter_id_fkey(id, full_name)');
 
     if (user.role === 'worker') {
       reportsQuery = reportsQuery.or(`assigned_to_id.eq.${user.id},reporter_id.eq.${user.id}`);
@@ -152,9 +152,8 @@ export function GalleryPage() {
         .from('reports')
         .select(`
           *,
-          reporter:users!reports_reporter_id_fkey(*),
-          assigned_to:users!reports_assigned_to_id_fkey(*),
-          closed_by:users!reports_closed_by_id_fkey(*),
+          reporter:profiles!reports_reporter_id_fkey(*),
+          assigned_to:profiles!reports_assigned_to_fkey(*),
           category:categories(*),
           photos:report_photos(*),
           history:report_history(*)
@@ -251,9 +250,8 @@ export function GalleryPage() {
         .from('reports')
         .select(`
           *,
-          reporter:users!reports_reporter_id_fkey(*),
-          assigned_to:users!reports_assigned_to_id_fkey(*),
-          closed_by:users!reports_closed_by_id_fkey(*),
+          reporter:profiles!reports_reporter_id_fkey(*),
+          assigned_to:profiles!reports_assigned_to_fkey(*),
           category:categories(*),
           photos:report_photos(*),
           history:report_history(*)
