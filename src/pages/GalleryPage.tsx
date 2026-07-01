@@ -154,9 +154,7 @@ export function GalleryPage() {
           *,
           reporter:profiles!reports_reporter_id_fkey(*),
           assigned_to:profiles!reports_assigned_to_fkey(*),
-          category:categories(*),
-          photos:report_photos(*),
-          history:report_history(*)
+          category:categories(*)
         `)
         .order('created_at', { ascending: false });
 
@@ -252,9 +250,7 @@ export function GalleryPage() {
           *,
           reporter:profiles!reports_reporter_id_fkey(*),
           assigned_to:profiles!reports_assigned_to_fkey(*),
-          category:categories(*),
-          photos:report_photos(*),
-          history:report_history(*)
+          category:categories(*)
         `)
         .eq('id', reportId)
         .maybeSingle();
