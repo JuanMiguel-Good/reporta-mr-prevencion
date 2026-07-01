@@ -151,20 +151,27 @@ export function CameraPage() {
         const photoUrl = await uploadPhoto(compressedPhoto, user.company_id, report.id, false);
         photoUrls.push(photoUrl);
 
-        await supabase.from('report_photos').insert({
-          report_id: report.id,
-          photo_url: photoUrl,
-          is_main: i === 0,
-          is_evidence: false,
-          uploaded_by: user.id,
-        });
+        try {
+          await supabase.from('report_photos').insert({
+            report_id: report.id,
+            photo_url: photoUrl,
+            is_main: i === 0,
+            is_evidence: false,
+            uploaded_by: user.id,
+          });
+        } catch (photoInsertErr) {
+          console.warn('[report_photos] insert failed, continuing:', photoInsertErr);
+        }
       }
 
       if (photoUrls.length > 0) {
-        await supabase
+        const { error: updateErr } = await supabase
           .from('reports')
           .update({ photo_urls: photoUrls })
           .eq('id', report.id);
+        if (updateErr) {
+          console.error('[photo_urls] update failed:', updateErr);
+        }
       }
 
       setCapturedPhotos([]);
